@@ -1,7 +1,9 @@
 package com.sivaram.session14assignment2;
 
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -33,21 +35,38 @@ public class MainActivity extends AppCompatActivity {
         saveImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.nougat);
-                String externalStorageDirectory = Environment.getExternalStorageDirectory().toString();
 
-                File file = new File(externalStorageDirectory,"nougatPic.png");
+                // Check Whether Permission Granted Or Not If Not Request for Write External Storage Permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+                    }
+                }
+
+                // Convert Drawable item as BitMap
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.nougat);
+
+                // Read External Storage Folder
+                File sd = Environment.getExternalStorageDirectory();
+                String fileName = "test.png";
+                // Prepare to write Data to external Storage
+                File dest = new File(sd, fileName);
                 try {
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    bitmap.compress(Bitmap.CompressFormat.PNG,100, fileOutputStream);
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
+                    // Read Data through fileStream and write in compress mode to external storage.
+                    FileOutputStream out;
+                    out = new FileOutputStream(dest);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    out.flush();
+                    out.close();
                 } catch (FileNotFoundException e) {
+                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (IOException e) {
+                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                Toast.makeText(MainActivity.this, externalStorageDirectory, Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(MainActivity.this, "File Stored To external Storage Successfully.", Toast.LENGTH_SHORT).show();
 
             }
         });
